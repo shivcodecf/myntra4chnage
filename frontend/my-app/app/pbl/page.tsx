@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 
-import type { PBLDashboardData, PBLDashboardResponse } from "@/types/pbl";
+import { PBLDashboard, PBLDashboardResponse } from "@/types/pbl";
 import Link from "next/link";
 
 export default function PBLPage() {
-  const [dashboard, setDashboard] = useState<PBLDashboardData | null>(null);
+  const [dashboard, setDashboard] =
+  useState<PBLDashboard | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

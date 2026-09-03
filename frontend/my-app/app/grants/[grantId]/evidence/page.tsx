@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import api from "@/lib/api";
-import type {
-  GrantEvidence,
+import {
+  GrantEvidenceRecord,
   GrantEvidenceResponse,
 } from "@/types/grant";
 
@@ -13,7 +13,7 @@ export default function EvidencePage() {
   const params = useParams();
   const grantId = params.grantId as string;
 
-  const [evidence, setEvidence] = useState<GrantEvidence[]>([]);
+  const [evidence, setEvidence] = useState<GrantEvidenceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 

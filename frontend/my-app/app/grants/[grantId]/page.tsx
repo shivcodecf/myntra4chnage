@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import type {
+  GrantFinanceResponse,
+  GrantEvidenceRecord,
+  GrantEvidenceResponse,
+} from "@/types/grant";
 
 interface MonthPerformance {
   reportingMonth: string;
@@ -53,17 +58,19 @@ interface BudgetLine {
   financeNote: string;
 }
 
-interface GrantEvidenceRecord {
-  recordId: string;
-  type: string;
-  reportingMonth: string;
-  district: string;
-  title: string;
-  summary: string;
-  fileName: string;
-  relativePath: string;
-  usageNote: string;
-}
+// export interface GrantEvidenceRecord {
+//   id: string;
+//   type: string;
+//   mediaType: string;
+//   reportingMonth: string;
+//   district: string;
+//   title: string;
+//   description: string;
+//   summary?: string;
+//   fileName: string;
+//   relativePath: string;
+//   usageNote: string;
+// }
 
 interface MonthlyPerformanceResponse {
   success: boolean;
@@ -73,23 +80,23 @@ interface MonthlyPerformanceResponse {
   };
 }
 
-interface GrantFinanceResponse {
-  success: boolean;
-  data: {
-    grantId: string;
-    summary: GrantFinanceSummary;
-    months: GrantFinanceMonth[];
-    budgetLines: BudgetLine[];
-  };
-}
+// interface GrantFinanceResponse {
+//   success: boolean;
+//   data: {
+//     grantId: string;
+//     summary: GrantFinanceSummary;
+//     months: GrantFinanceMonth[];
+//     budgetLines: BudgetLine[];
+//   };
+// }
 
-interface GrantEvidenceResponse {
-  success: boolean;
-  data: {
-    grantId: string;
-    records: GrantEvidenceRecord[];
-  };
-}
+// interface GrantEvidenceResponse {
+//   success: boolean;
+//   data: {
+//     grantId: string;
+//     records: GrantEvidenceRecord[];
+//   };
+// }
 
 export default function GrantDetailPage() {
   const params = useParams();

@@ -46,12 +46,19 @@ export interface GrantFinanceResponse {
 }
 
 export interface GrantEvidenceRecord {
-  recordId: string;
+  recordId?: string;
+  id?: string;
+
   type: string;
+  mediaType?: string;
+
   reportingMonth: string;
   district: string;
+
   title: string;
-  summary: string;
+  description?: string;
+  summary?: string;
+
   fileName: string;
   relativePath: string;
   usageNote: string;

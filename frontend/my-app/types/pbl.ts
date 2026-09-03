@@ -1,11 +1,51 @@
-export interface PBLDashboard {
+export interface PBLRisk {
+  participation: string;
+  evidenceSubmission: string;
+  attendance: string;
+}
+
+export interface PBLMetrics {
   totalSchools: number;
-  completedSchools: number;
-  completionRate: number;
-  evidenceSubmitted: number;
-  evidenceSubmissionRate: number;
+  participatingSchools: number;
+  participationPercentage: number;
+  evidenceSchools: number;
+  evidenceSubmissionPercentage: number;
+  totalEnrollment: number;
   totalAttendance: number;
-  attendanceRate: number;
+  attendancePercentage: number;
+  risk: PBLRisk;
+}
+
+export interface PBLMonthly {
+  month: string;
+  totalSchools: number;
+  participatingSchools: number;
+  participationPercentage: number;
+  evidenceSchools: number;
+  evidenceSubmissionPercentage: number;
+  totalEnrollment: number;
+  totalAttendance: number;
+  attendancePercentage: number;
+}
+
+export interface PBLMovementMetric {
+  previous: number;
+  current: number;
+  change: number;
+}
+
+export interface PBLMovement {
+  from: string;
+  to: string;
+  participation: PBLMovementMetric;
+  attendance: PBLMovementMetric;
+}
+
+export interface PBLDashboard {
+  filters: Record<string, string>;
+  metrics: PBLMetrics;
+  monthly: PBLMonthly[];
+  movement: PBLMovement;
 }
 
 export interface PBLDashboardResponse {

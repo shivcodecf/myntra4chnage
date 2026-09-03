@@ -268,7 +268,7 @@ export default function RiskPage() {
           </p>
 
           <div className="mt-4 text-black grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div clas>
+            <div>
               <span className="font-medium text-black">On Track:</span>{" "}
               ≥ 75%
             </div>
