@@ -70,7 +70,7 @@ const evidenceMediaSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 evidenceMediaSchema.index({
@@ -78,9 +78,6 @@ evidenceMediaSchema.index({
   reportingMonth: 1,
 });
 
-const EvidenceMedia = mongoose.model(
-  "EvidenceMedia",
-  evidenceMediaSchema
-);
+const EvidenceMedia = mongoose.model("EvidenceMedia", evidenceMediaSchema);
 
 export default EvidenceMedia;

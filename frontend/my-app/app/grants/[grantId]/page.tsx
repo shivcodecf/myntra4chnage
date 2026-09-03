@@ -3,12 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import Link from "next/link";
-
-import type {
-  GrantFinanceResponse,
-  GrantEvidenceResponse,
-} from "@/types/grant";
 
 interface MonthPerformance {
   reportingMonth: string;
@@ -36,12 +30,64 @@ interface MonthPerformance {
   milestoneSummary: string;
 }
 
+interface GrantFinanceSummary {
+  approvedBudget: number;
+  utilized: number;
+  utilizationRate: number;
+}
+
+interface GrantFinanceMonth {
+  reportingMonth: string;
+  approvedBudget: number;
+  utilized: number;
+  utilizationRate: number;
+}
+
+interface BudgetLine {
+  reportingMonth: string;
+  budgetLine: string;
+  approvedBudget: number;
+  utilized: number;
+  cumulativeUtilized: number;
+  cumulativeUtilizationRate: number;
+  financeNote: string;
+}
+
+interface GrantEvidenceRecord {
+  recordId: string;
+  type: string;
+  reportingMonth: string;
+  district: string;
+  title: string;
+  summary: string;
+  fileName: string;
+  relativePath: string;
+  usageNote: string;
+}
+
 interface MonthlyPerformanceResponse {
   success: boolean;
-
   data: {
     grantId: string;
     months: MonthPerformance[];
+  };
+}
+
+interface GrantFinanceResponse {
+  success: boolean;
+  data: {
+    grantId: string;
+    summary: GrantFinanceSummary;
+    months: GrantFinanceMonth[];
+    budgetLines: BudgetLine[];
+  };
+}
+
+interface GrantEvidenceResponse {
+  success: boolean;
+  data: {
+    grantId: string;
+    records: GrantEvidenceRecord[];
   };
 }
 
@@ -52,484 +98,538 @@ export default function GrantDetailPage() {
   const grantId = params.grantId as string;
 
   const [months, setMonths] = useState<MonthPerformance[]>([]);
+  const [financeSummary, setFinanceSummary] =
+    useState<GrantFinanceSummary | null>(null);
+  const [financeMonths, setFinanceMonths] =
+    useState<GrantFinanceMonth[]>([]);
+  const [budgetLines, setBudgetLines] =
+    useState<BudgetLine[]>([]);
+  const [evidenceRecords, setEvidenceRecords] =
+    useState<GrantEvidenceRecord[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [finance, setFinance] = useState<GrantFinanceResponse["data"] | null>(
-    null,
-  );
-
-  const [financeLoading, setFinanceLoading] = useState(true);
-
-  const [evidence, setEvidence] = useState<
-    GrantEvidenceResponse["data"] | null
-  >(null);
-
-  const [evidenceLoading, setEvidenceLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchGrantData = async () => {
       try {
-        const [performanceResponse, financeResponse, evidenceResponse] =
-          await Promise.all([
-            api.get<MonthlyPerformanceResponse>(
-              `/grants/${grantId}/performance`,
-            ),
+        setLoading(true);
+        setError("");
 
-            api.get<GrantFinanceResponse>(`/grants/${grantId}/finance`),
+        const [
+          performanceResponse,
+          financeResponse,
+          evidenceResponse,
+        ] = await Promise.all([
+          api.get<MonthlyPerformanceResponse>(
+            `/grants/${grantId}/performance`
+          ),
 
-            api.get<GrantEvidenceResponse>(`/grants/${grantId}/evidence`),
-          ]);
+          api.get<GrantFinanceResponse>(
+            `/grants/${grantId}/finance`
+          ),
+
+          api.get<GrantEvidenceResponse>(
+            `/grants/${grantId}/evidence`
+          ),
+        ]);
 
         if (performanceResponse.data.success) {
-          setMonths(performanceResponse.data.data.months);
+          setMonths(
+            performanceResponse.data.data.months
+          );
         }
 
         if (financeResponse.data.success) {
-          setFinance(financeResponse.data.data);
+          setFinanceSummary(
+            financeResponse.data.data.summary
+          );
+
+          setFinanceMonths(
+            financeResponse.data.data.months
+          );
+
+          setBudgetLines(
+            financeResponse.data.data.budgetLines
+          );
         }
+
         if (evidenceResponse.data.success) {
-          setEvidence(evidenceResponse.data.data);
+          setEvidenceRecords(
+            evidenceResponse.data.data.records
+          );
         }
       } catch (error) {
-        console.error(error);
+        console.error("Failed to fetch grant data:", error);
         setError("Failed to load grant data.");
       } finally {
         setLoading(false);
-        setFinanceLoading(false);
-        setEvidenceLoading(false);
       }
     };
 
     if (grantId) {
-      fetchData();
+      fetchGrantData();
     }
   }, [grantId]);
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-600">Loading grant performance...</p>
-      </main>
+      <div className="flex items-center justify-center py-20">
+        <p className="text-gray-600">
+          Loading grant data...
+        </p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-red-600">{error}</p>
-      </main>
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <p className="text-red-600">
+            {error}
+          </p>
+
+          <button
+            onClick={() => router.refresh()}
+            className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
     );
   }
 
+  const latestMonth =
+    months.length > 0
+      ? months[months.length - 1]
+      : null;
+
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Back button */}
+    <div className="space-y-8">
+      {/* Overview Header */}
+      <div>
+        <p className="text-sm font-medium text-blue-600">
+          Grant Overview
+        </p>
 
-        <button
-          onClick={() => router.push("/")}
-          className="mb-6 text-sm text-blue-600 hover:underline"
-        >
-          ← Back to Dashboard
-        </button>
+        <h2 className="mt-1 text-2xl font-bold text-gray-900">
+          Program Summary
+        </h2>
 
-        {/* Header */}
+        <p className="mt-2 text-gray-600">
+          Overview of grant performance, financial
+          utilization and evidence submission.
+        </p>
+      </div>
 
-        <div className="mb-8">
-          <p className="text-sm text-gray-500">Grant</p>
+      {/* Latest Performance */}
+      {latestMonth && (
+        <section>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Latest Performance
+          </h3>
 
-          <h1 className="text-3xl text-black font-bold text-gray-900">
-            {grantId}
-          </h1>
+          <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {/* PBL */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                PBL Completion
+              </p>
 
-          <p className="mt-2 text-gray-600">
-            Monthly performance and grant reporting overview.
-          </p>
-        </div>
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                {(
+                  latestMonth.pbl.completionRate * 100
+                ).toFixed(1)}
+                %
+              </p>
 
-        {/* Monthly performance */}
+              <p className="mt-2 text-sm text-gray-500">
+                {latestMonth.pbl.schoolsCompleted}{" "}
+                schools completed
+              </p>
+            </div>
 
-        <div className="space-y-6">
-          {months.map((month) => (
-            <div
-              key={month.reportingMonth}
-              className="bg-white text-black rounded-xl border border-gray-200 shadow-sm p-6"
+            {/* Evidence */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Evidence Submission
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                {(
+                  latestMonth.evidence.submissionRate *
+                  100
+                ).toFixed(1)}
+                %
+              </p>
+
+              <p className="mt-2 text-sm text-gray-500">
+                {
+                  latestMonth.evidence
+                    .schoolsWithEvidence
+                }{" "}
+                schools with evidence
+              </p>
+            </div>
+
+            {/* Attendance */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Attendance
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                {(
+                  latestMonth.attendance.attendanceRate *
+                  100
+                ).toFixed(1)}
+                %
+              </p>
+
+              <p className="mt-2 text-sm text-gray-500">
+                {latestMonth.attendance.totalAttendance.toLocaleString()}{" "}
+                /{" "}
+                {latestMonth.attendance.totalEnrollment.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Finance Overview */}
+      {financeSummary && (
+        <section>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Financial Overview
+          </h3>
+
+          <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {/* Approved Budget */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Approved Budget
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                {financeSummary.approvedBudget}
+              </p>
+            </div>
+
+            {/* Utilized */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Utilized
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                {financeSummary.utilized}
+              </p>
+            </div>
+
+            {/* Utilization */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Utilization Rate
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-gray-900">
+                {(
+                  financeSummary.utilizationRate * 100
+                ).toFixed(1)}
+                %
+              </p>
+
+              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                <div
+                  className="h-full rounded-full bg-blue-600"
+                  style={{
+                    width: `${Math.min(
+                      financeSummary.utilizationRate *
+                        100,
+                      100
+                    )}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Reporting Months */}
+      {months.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Reporting Months
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Monthly reporting and risk status.
+              </p>
+            </div>
+
+            <button
+              onClick={() =>
+                router.push(
+                  `/grants/${grantId}/performance`
+                )
+              }
+              className="text-sm font-medium text-blue-600 hover:text-blue-800"
             >
-              {/* Month header */}
-
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Reporting Month</p>
-
-                  <h2 className="text-xl text-black font-semibold text-gray-900">
-                    {month.reportingMonth}
-                  </h2>
-                </div>
-
-                <div className="flex gap-3">
-                  <span className="px-3 py-1 text-black rounded-full bg-gray-100 text-gray-700 text-sm">
-                    {month.reportStatus}
-                  </span>
-
-                  <span
-                    className={`px-3 py-1 text-black rounded-full text-sm ${
-                      month.riskStatus === "On Track"
-                        ? "bg-green-100 text-green-700"
-                        : month.riskStatus === "At Risk"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {month.riskStatus}
-                  </span>
-                </div>
-              </div>
-
-              {/* Metrics */}
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
-                {/* PBL */}
-
-                <div className="rounded-lg text-black bg-gray-50 p-5">
-                  <p className="text-sm text-black text-gray-500">
-                    PBL Completion
-                  </p>
-
-                  <p className="mt-2 text-black text-2xl font-bold">
-                    {(month.pbl.completionRate * 100).toFixed(1)}%
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    {month.pbl.schoolsCompleted} schools completed
-                  </p>
-                </div>
-
-                {/* Evidence */}
-
-                <div className="rounded-lg bg-gray-50 p-5">
-                  <p className="text-sm text-black text-gray-500">
-                    Evidence Submission
-                  </p>
-
-                  <p className="mt-2 text-black text-2xl font-bold">
-                    {(month.evidence.submissionRate * 100).toFixed(1)}%
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    {month.evidence.schoolsWithEvidence} schools submitted
-                    evidence
-                  </p>
-                </div>
-
-                {/* Attendance */}
-
-                <div className="rounded-lg text-black bg-gray-50 p-5">
-                  <p className="text-sm text-black text-gray-500">Attendance</p>
-
-                  <p className="mt-2 text-black text-2xl font-bold">
-                    {(month.attendance.attendanceRate * 100).toFixed(1)}%
-                  </p>
-
-                  <p className="mt-1 text-black text-sm text-gray-500">
-                    {month.attendance.totalAttendance.toLocaleString()} /{" "}
-                    {month.attendance.totalEnrollment.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Milestone */}
-
-              <div className="mt-6 pt-5 border-t border-gray-100">
-                <p className="text-sm text-black font-medium text-gray-700">
-                  Milestone Summary
-                </p>
-
-                <p className="mt-2 text-black text-sm text-gray-600">
-                  {month.milestoneSummary}
-                </p>
-              </div>
-
-              {/* Dates */}
-
-              <div className="mt-5 flex flex-col md:flex-row gap-6 text-sm">
-                <div>
-                  <span className="text-gray-500">Period End:</span>{" "}
-                  <span className="font-medium text-black">
-                    {new Date(month.periodEndDate).toLocaleDateString()}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-gray-500">Report Due:</span>{" "}
-                  <span className="font-medium text-black">
-                    {new Date(month.reportDueDate).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Finance Section */}
-
-        <div className="mt-10">
-          <div className="mb-6">
-            <p className="text-sm text-gray-500">Financial Overview</p>
-
-            <h2 className="text-2xl text-black font-bold text-gray-900">
-              Budget & Finance
-            </h2>
-
-            <p className="mt-1 text-gray-600">
-              Track approved budget, utilization and budget-line performance.
-            </p>
+              View Performance →
+            </button>
           </div>
 
-          {financeLoading ? (
-            <div className="bg-white text-black rounded-xl border p-6">
-              <p className="text-gray-500">Loading financial data...</p>
+          <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Month
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Report Status
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      PBL
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Evidence
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Attendance
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Risk
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {months.map((month) => (
+                    <tr
+                      key={month.reportingMonth}
+                      className="border-b border-gray-100 last:border-b-0"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {month.reportingMonth}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {month.reportStatus}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {(
+                          month.pbl.completionRate *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {(
+                          month.evidence.submissionRate *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {(
+                          month.attendance
+                            .attendanceRate * 100
+                        ).toFixed(1)}
+                        %
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                            month.riskStatus ===
+                            "On Track"
+                              ? "bg-green-100 text-green-700"
+                              : month.riskStatus ===
+                                "At Risk"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {month.riskStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ) : finance ? (
-            <>
-              {/* Summary cards */}
+          </div>
+        </section>
+      )}
 
-              <div className="grid text-black grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white text-black rounded-xl border border-gray-200 shadow-sm p-6">
-                  <p className="text-sm text-gray-500">Approved Budget</p>
+      {/* Finance Monthly Summary */}
+      {financeMonths.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Monthly Finance
+              </h3>
 
-                  <p className="mt-2 text-black text-3xl font-bold text-gray-900">
-                    {finance.summary.approvedBudget.toLocaleString()}
-                  </p>
-                </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Approved budget versus utilized amount.
+              </p>
+            </div>
 
-                <div className="bg-white text-black rounded-xl border border-gray-200 shadow-sm p-6">
-                  <p className="text-sm text-gray-500">Total Utilized</p>
-
-                  <p className="mt-2 text-black text-3xl font-bold text-gray-900">
-                    {finance.summary.utilized.toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="bg-white text-black rounded-xl border border-gray-200 shadow-sm p-6">
-                  <p className="text-sm  text-black text-gray-500">
-                    Utilization Rate
-                  </p>
-
-                  <p className="mt-2 text-black text-3xl font-bold text-gray-900">
-                    {(finance.summary.utilizationRate * 100).toFixed(1)}%
-                  </p>
-                </div>
-              </div>
-
-              {/* Monthly finance */}
-
-              <div className="mt-6 text-black  bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 className="text-lg text-black font-semibold text-gray-900">
-                  Monthly Budget Utilization
-                </h3>
-
-                <div className="overflow-x-auto mt-5">
-                  <table className="w-full text-black text-sm">
-                    <thead>
-                      <tr className="border-b text-black  text-left">
-                        <th className="py-3 text-black pr-6">Month</th>
-
-                        <th className="py-3 text-black pr-6">
-                          Approved Budget
-                        </th>
-
-                        <th className="py-3 text-black pr-6">Utilized</th>
-
-                        <th className="py-3">Utilization</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {finance.months.map((month) => (
-                        <tr
-                          key={month.reportingMonth}
-                          className="border-b last:border-0"
-                        >
-                          <td className="py-4 pr-6 font-medium">
-                            {month.reportingMonth}
-                          </td>
-
-                          <td className="py-4 pr-6">
-                            {month.approvedBudget.toLocaleString()}
-                          </td>
-
-                          <td className="py-4 pr-6">
-                            {month.utilized.toLocaleString()}
-                          </td>
-
-                          <td className="py-4">
-                            {(month.utilizationRate * 100).toFixed(1)}%
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Budget lines */}
-
-              <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h3 className="text-lg text-black font-semibold text-gray-900">
-                  Budget Line Details
-                </h3>
-
-                <div className="overflow-x-auto mt-5">
-                  <table className="w-full text-black text-sm">
-                    <thead>
-                      <tr className="border-b text-left">
-                        <th className="py-3 text-black pr-6">Month</th>
-
-                        <th className="py-3 text-black pr-6">Budget Line</th>
-
-                        <th className="py-3 text-black pr-6">Approved</th>
-
-                        <th className="py-3 pr-6">Utilized</th>
-
-                        <th className="py-3 pr-6">Cumulative</th>
-
-                        <th className="py-3 pr-6">Utilization</th>
-
-                        <th className="py-3">Finance Note</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {finance.budgetLines.map((line, index) => (
-                        <tr
-                          key={`${line.reportingMonth}-${line.budgetLine}-${index}`}
-                          className="border-b last:border-0"
-                        >
-                          <td className="py-4 pr-6">{line.reportingMonth}</td>
-
-                          <td className="py-4 pr-6 font-medium">
-                            {line.budgetLine}
-                          </td>
-
-                          <td className="py-4 pr-6">
-                            {line.approvedBudget.toLocaleString()}
-                          </td>
-
-                          <td className="py-4 pr-6">
-                            {line.utilized.toLocaleString()}
-                          </td>
-
-                          <td className="py-4 pr-6">
-                            {line.cumulativeUtilized.toLocaleString()}
-                          </td>
-
-                          <td className="py-4 pr-6">
-                            {(line.cumulativeUtilizationRate * 100).toFixed(1)}%
-                          </td>
-
-                          <td className="py-4">{line.financeNote}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          ) : null}
-        </div>
-        {/* Evidence & Media */}
-
-        <div className="mt-10">
-          <div className="mb-6">
-            <p className="text-sm text-gray-500">Supporting Materials</p>
-
-            <h2 className="text-2xl text-black font-bold">Evidence & Media</h2>
-
-            <p className="mt-1 text-gray-600">
-              Supporting evidence, media records and reporting materials.
-            </p>
+            <button
+              onClick={() =>
+                router.push(
+                  `/grants/${grantId}/finance`
+                )
+              }
+              className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            >
+              View Finance →
+            </button>
           </div>
 
-          {evidenceLoading ? (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <p className="text-gray-500">Loading evidence...</p>
+          <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Month
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Approved Budget
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Utilized
+                    </th>
+
+                    <th className="px-6 py-4 font-semibold text-gray-700">
+                      Utilization
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {financeMonths.map((month) => (
+                    <tr
+                      key={month.reportingMonth}
+                      className="border-b border-gray-100 last:border-b-0"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {month.reportingMonth}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {month.approvedBudget}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {month.utilized}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {(
+                          month.utilizationRate * 100
+                        ).toFixed(1)}
+                        %
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ) : evidence && evidence.records.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {evidence.records.map((record) => (
+          </div>
+        </section>
+      )}
+
+      {/* Evidence Summary */}
+      {evidenceRecords.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Evidence & Media
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Available evidence and media records.
+              </p>
+            </div>
+
+            <button
+              onClick={() =>
+                router.push(
+                  `/grants/${grantId}/evidence`
+                )
+              }
+              className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            >
+              View Evidence →
+            </button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {evidenceRecords
+              .slice(0, 3)
+              .map((record) => (
                 <div
                   key={record.recordId}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
                 >
-                  {/* Media preview */}
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                      {record.type}
+                    </span>
 
-                  <div className="h-48 bg-gray-100 flex items-center justify-center">
-                    <div className="text-center px-4">
-                      <p className="text-4xl mb-2">
-                        {record.type === "image" ? "🖼️" : "📰"}
-                      </p>
-
-                      <p className="text-sm text-gray-500">
-                        {record.type.replace("_", " ")}
-                      </p>
-                    </div>
+                    <span className="text-xs text-gray-500">
+                      {record.reportingMonth}
+                    </span>
                   </div>
 
-                  {/* Content */}
+                  <h4 className="mt-4 font-semibold text-gray-900">
+                    {record.title}
+                  </h4>
 
-                  <div className="p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                        {record.type.replace("_", " ")}
-                      </span>
+                  <p className="mt-2 line-clamp-3 text-sm text-gray-600">
+                    {record.summary}
+                  </p>
 
-                      <span className="text-xs text-gray-500">
-                        {record.reportingMonth}
-                      </span>
-                    </div>
-
-                    <h3 className="mt-4 text-lg font-semibold text-gray-900">
-                      {record.title}
-                    </h3>
-
-                    <p className="mt-2 text-sm text-gray-600">
-                      {record.summary}
-                    </p>
-
-                    <div className="mt-4 space-y-2 text-sm">
-                      <div>
-                        <span className="text-gray-500">District:</span>{" "}
-                        <span className="font-medium text-gray-800">
-                          {record.district}
-                        </span>
-                      </div>
-
-                      <div>
-                        <span className="text-gray-500">File:</span>{" "}
-                        <span className="font-medium text-gray-800 break-all">
-                          {record.fileName}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <p className="text-xs text-gray-500">Usage Note</p>
-
-                      <p className="mt-1 text-xs text-gray-600">
-                        {record.usageNote}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="mt-4 text-xs text-gray-500">
+                    {record.district}
+                  </p>
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <p className="text-gray-500">No evidence found for this grant.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
+          </div>
+        </section>
+      )}
+
+      {/* Empty State */}
+      {months.length === 0 &&
+        !financeSummary &&
+        evidenceRecords.length === 0 && (
+          <div className="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+            <p className="text-gray-600">
+              No grant data available.
+            </p>
+          </div>
+        )}
+    </div>
   );
 }
