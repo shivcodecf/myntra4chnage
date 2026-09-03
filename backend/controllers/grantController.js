@@ -420,7 +420,7 @@ export const getGrantEvidence = async (req, res) => {
       grantId,
     })
       .select(
-        "recordId recordType reportingMonth district title summaryOrCaption fileName relativePath usageNote"
+        "recordId recordType reportingMonth district title summaryOrCaption fileName relativePath usageNote",
       )
       .sort({
         reportingMonth: 1,
