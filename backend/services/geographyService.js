@@ -5,12 +5,14 @@ import { classifyRisk } from "./riskService.js";
  * Calculate performance metrics for a group of PBL records.
  */
 const calculatePerformance = (records) => {
+  // All unique schools in the selected records
   const schools = new Set(
     records
       .map((record) => record.school?.code)
       .filter(Boolean),
   );
 
+  // Schools where PBL was conducted
   const participatingSchools = new Set(
     records
       .filter((record) => record.pbl?.conducted === true)
@@ -18,6 +20,7 @@ const calculatePerformance = (records) => {
       .filter(Boolean),
   );
 
+  // Schools that submitted evidence
   const evidenceSchools = new Set(
     records
       .filter((record) => record.pbl?.evidenceSubmitted === true)
@@ -25,11 +28,13 @@ const calculatePerformance = (records) => {
       .filter(Boolean),
   );
 
+  // Total enrolled students
   const totalEnrollment = records.reduce(
     (sum, record) => sum + (record.enrollment?.total || 0),
     0,
   );
 
+  // Total attendance records across PBL sessions
   const totalAttendance = records.reduce(
     (sum, record) => sum + (record.attendance?.total || 0),
     0,
@@ -37,23 +42,36 @@ const calculatePerformance = (records) => {
 
   const totalSchools = schools.size;
 
+  // Participation percentage
   const participationPercentage =
     totalSchools > 0
       ? participatingSchools.size / totalSchools
       : 0;
 
+  // Evidence submission percentage
   const evidenceSubmissionPercentage =
     participatingSchools.size > 0
       ? evidenceSchools.size / participatingSchools.size
       : 0;
 
+  /*
+   * Attendance is recorded across 2 PBL sessions.
+   *
+   * Example:
+   * Enrollment = 201
+   * Attendance = 341
+   *
+   * Attendance rate:
+   * 341 / (201 * 2)
+   * = 0.8483
+   * = 84.83%
+   */
   const attendancePercentage =
     totalEnrollment > 0
-      ? totalAttendance / totalEnrollment
+      ? totalAttendance / (totalEnrollment * 2)
       : 0;
 
-  // Overall performance score.
-  // We use the average of the three core indicators.
+  // Overall performance score
   const overallScore =
     (participationPercentage +
       evidenceSubmissionPercentage +
@@ -73,10 +91,10 @@ const calculatePerformance = (records) => {
     attendancePercentage,
 
     overallScore,
+
     riskStatus: classifyRisk(overallScore),
   };
 };
-
 /**
  * Get district-level performance.
  */

@@ -51,33 +51,33 @@ export default function Home() {
 
   const totalApprovedBudget = grants.reduce(
     (total, grant) => total + grant.totalApprovedBudget,
-    0
+    0,
   );
 
   const totalUtilized = grants.reduce(
     (total, grant) => total + grant.totalUtilized,
-    0
+    0,
   );
 
   const attentionNeeded = grants.filter(
-    (grant) => grant.latestRiskStatus !== "On Track"
+    (grant) => grant.latestRiskStatus !== "On Track",
   ).length;
 
   const overallUtilization =
-    totalApprovedBudget > 0
-      ? (totalUtilized / totalApprovedBudget) * 100
-      : 0;
+    totalApprovedBudget > 0 ? (totalUtilized / totalApprovedBudget) * 100 : 0;
 
   return (
     <main className="min-h-screen bg-gray-100 px-4 py-8 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Grant Dashboard
-          </h1>
-
+          <h1 className="text-3xl font-bold text-gray-900">Grant Dashboard</h1>
+          <Link
+            href="/pbl"
+            className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            PBL Dashboard →
+          </Link>
           <p className="mt-2 text-gray-600">
             Overview of grants, budget utilization and risk status.
           </p>
@@ -85,42 +85,31 @@ export default function Home() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-
           {/* Total Grants */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <p className="text-sm text-gray-500">
-              Total Grants
-            </p>
+            <p className="text-sm text-gray-500">Total Grants</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {totalGrants}
             </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Active grants
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Active grants</p>
           </div>
 
           {/* Approved Budget */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <p className="text-sm text-gray-500">
-              Approved Budget
-            </p>
+            <p className="text-sm text-gray-500">Approved Budget</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {totalApprovedBudget}
             </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Across all grants
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Across all grants</p>
           </div>
 
           {/* Total Utilized */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <p className="text-sm text-gray-500">
-              Total Utilized
-            </p>
+            <p className="text-sm text-gray-500">Total Utilized</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {totalUtilized}
@@ -133,17 +122,13 @@ export default function Home() {
 
           {/* Attention Needed */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <p className="text-sm text-gray-500">
-              Attention Needed
-            </p>
+            <p className="text-sm text-gray-500">Attention Needed</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {attentionNeeded}
             </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Grants not on track
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Grants not on track</p>
           </div>
         </div>
 
@@ -151,9 +136,7 @@ export default function Home() {
         <div className="mt-10">
           <div className="flex items-end justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                Grants
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900">Grants</h2>
 
               <p className="mt-1 text-sm text-gray-600">
                 Select a grant to view detailed performance and finance data.
@@ -171,9 +154,7 @@ export default function Home() {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">
-                      {grant.donor}
-                    </p>
+                    <p className="text-sm text-gray-500">{grant.donor}</p>
 
                     <h2 className="mt-1 text-lg font-semibold text-gray-900">
                       {grant.grantName}
@@ -195,12 +176,9 @@ export default function Home() {
 
                 {/* Financial Information */}
                 <div className="mt-6 space-y-4">
-
                   {/* Approved Budget */}
                   <div>
-                    <p className="text-sm text-gray-500">
-                      Approved Budget
-                    </p>
+                    <p className="text-sm text-gray-500">Approved Budget</p>
 
                     <p className="mt-1 text-xl text-black font-semibold">
                       {grant.totalApprovedBudget}
@@ -209,9 +187,7 @@ export default function Home() {
 
                   {/* Utilized */}
                   <div>
-                    <p className="text-sm text-gray-500">
-                      Utilized
-                    </p>
+                    <p className="text-sm text-gray-500">Utilized</p>
 
                     <p className="mt-1 text-xl text-black font-semibold">
                       {grant.totalUtilized}
@@ -221,9 +197,7 @@ export default function Home() {
                   {/* Utilization */}
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-500">
-                        Utilization
-                      </span>
+                      <span className="text-gray-500">Utilization</span>
 
                       <span className="font-medium text-gray-700">
                         {(grant.utilizationRate * 100).toFixed(1)}%
