@@ -1,4 +1,5 @@
 import PblRecord from "../models/PblRecord.js";
+import { getBlockPerformance, getDistrictPerformance } from "./geographyService.js";
 import { classifyRisk } from "./riskService.js";
 
 /**
@@ -80,8 +81,17 @@ export const getDashboardMetrics = async (filters = {}) => {
   const evidenceSubmissionPercentage =
     participatingSchools > 0 ? evidenceSchools / participatingSchools : 0;
 
+  // Calculate attendance using the attendance rate
+  // stored in each PBL record.
+  const attendanceRates = records
+    .map((record) => record.attendance?.rate)
+    .filter((rate) => typeof rate === "number" && rate > 0);
+
   const attendancePercentage =
-    totalEnrollment > 0 ? totalAttendance / (totalEnrollment * 2) : 0;
+    attendanceRates.length > 0
+      ? attendanceRates.reduce((sum, rate) => sum + rate, 0) /
+        attendanceRates.length
+      : 0;
 
   return {
     totalSchools,
@@ -100,7 +110,6 @@ export const getDashboardMetrics = async (filters = {}) => {
     },
   };
 };
-
 /**
  * Calculate monthly metrics.
  *
@@ -168,10 +177,21 @@ export const getMonthlyMetrics = async (filters = {}) => {
       totalSchools > 0 ? participatingSchools / totalSchools : 0;
 
     const evidenceSubmissionPercentage =
-      participatingSchools > 0 ? evidenceSchools / participatingSchools : 0;
+      participatingSchools > 0
+        ? evidenceSchools / participatingSchools
+        : 0;
+
+    // Calculate attendance using the attendance rate
+    // stored in each PBL record.
+    const attendanceRates = monthRecords
+      .map((record) => record.attendance?.rate)
+      .filter((rate) => typeof rate === "number" && rate > 0);
 
     const attendancePercentage =
-      totalEnrollment > 0 ? totalAttendance / (totalEnrollment * 2) : 0;
+      attendanceRates.length > 0
+        ? attendanceRates.reduce((sum, rate) => sum + rate, 0) /
+          attendanceRates.length
+        : 0;
 
     return {
       month,
@@ -221,6 +241,287 @@ export const getMonthOverMonthMovement = async (filters = {}) => {
       current: current.attendancePercentage,
       change: current.attendancePercentage - previous.attendancePercentage,
     },
+  };
+};
+
+
+
+/**
+ * Generate a deterministic monthly program review summary.
+ *
+ * This does not depend on AI.
+ * All insights are calculated from the existing PBL metrics,
+ * district performance and block performance.
+ */
+export const getMonthlyReviewSummary = async (filters = {}) => {
+  const monthlyData = await getMonthlyMetrics(filters);
+
+  if (monthlyData.length === 0) {
+    return {
+      month: null,
+      achievements: [],
+      monthOverMonthChanges: [],
+      risks: [],
+      priorityDistricts: [],
+      priorityBlocks: [],
+      discussionPoints: [],
+    };
+  }
+
+  const current = monthlyData[monthlyData.length - 1];
+  const previous =
+    monthlyData.length > 1
+      ? monthlyData[monthlyData.length - 2]
+      : null;
+
+  const districts = await getDistrictPerformance(filters);
+  const blocks = await getBlockPerformance(filters);
+
+  /*
+   * -----------------------------
+   * Achievements
+   * -----------------------------
+   */
+
+  const achievements = [];
+
+  if (current.participationPercentage >= 0.75) {
+    achievements.push(
+      `School participation is on track at ${(current.participationPercentage * 100).toFixed(1)}%.`,
+    );
+  }
+
+  if (current.evidenceSubmissionPercentage >= 0.75) {
+    achievements.push(
+      `Evidence submission is on track at ${(current.evidenceSubmissionPercentage * 100).toFixed(1)}%.`,
+    );
+  }
+
+  if (current.attendancePercentage >= 0.75) {
+    achievements.push(
+      `Attendance is on track at ${(current.attendancePercentage * 100).toFixed(1)}%.`,
+    );
+  }
+
+  /*
+   * -----------------------------
+   * Month-over-month changes
+   * -----------------------------
+   */
+
+  const monthOverMonthChanges = [];
+
+  if (previous) {
+    const participationChange =
+      current.participationPercentage -
+      previous.participationPercentage;
+
+    const evidenceChange =
+      current.evidenceSubmissionPercentage -
+      previous.evidenceSubmissionPercentage;
+
+    const attendanceChange =
+      current.attendancePercentage -
+      previous.attendancePercentage;
+
+    monthOverMonthChanges.push({
+      metric: "Participation",
+      from: previous.month,
+      to: current.month,
+      previous: previous.participationPercentage,
+      current: current.participationPercentage,
+      change: participationChange,
+      direction:
+        participationChange > 0
+          ? "improved"
+          : participationChange < 0
+            ? "declined"
+            : "unchanged",
+    });
+
+    monthOverMonthChanges.push({
+      metric: "Evidence Submission",
+      from: previous.month,
+      to: current.month,
+      previous: previous.evidenceSubmissionPercentage,
+      current: current.evidenceSubmissionPercentage,
+      change: evidenceChange,
+      direction:
+        evidenceChange > 0
+          ? "improved"
+          : evidenceChange < 0
+            ? "declined"
+            : "unchanged",
+    });
+
+    monthOverMonthChanges.push({
+      metric: "Attendance",
+      from: previous.month,
+      to: current.month,
+      previous: previous.attendancePercentage,
+      current: current.attendancePercentage,
+      change: attendanceChange,
+      direction:
+        attendanceChange > 0
+          ? "improved"
+          : attendanceChange < 0
+            ? "declined"
+            : "unchanged",
+    });
+  }
+
+  /*
+   * -----------------------------
+   * Overall risks
+   * -----------------------------
+   */
+
+  const risks = [];
+
+  if (current.participationPercentage < 0.75) {
+    risks.push({
+      metric: "Participation",
+      percentage: current.participationPercentage,
+      risk: classifyRisk(current.participationPercentage),
+      message: `Participation is below the 75% on-track threshold at ${(current.participationPercentage * 100).toFixed(1)}%.`,
+    });
+  }
+
+  if (current.evidenceSubmissionPercentage < 0.75) {
+    risks.push({
+      metric: "Evidence Submission",
+      percentage: current.evidenceSubmissionPercentage,
+      risk: classifyRisk(current.evidenceSubmissionPercentage),
+      message: `Evidence submission is below the 75% on-track threshold at ${(current.evidenceSubmissionPercentage * 100).toFixed(1)}%.`,
+    });
+  }
+
+  if (current.attendancePercentage < 0.75) {
+    risks.push({
+      metric: "Attendance",
+      percentage: current.attendancePercentage,
+      risk: classifyRisk(current.attendancePercentage),
+      message: `Attendance is below the 75% on-track threshold at ${(current.attendancePercentage * 100).toFixed(1)}%.`,
+    });
+  }
+
+  /*
+   * -----------------------------
+   * Priority districts
+   * -----------------------------
+   *
+   * Lowest-performing districts first.
+   */
+
+  const priorityDistricts = [...districts]
+    .sort((a, b) => a.overallScore - b.overallScore)
+    .slice(0, 5)
+    .map((district) => ({
+      district: district.district,
+      overallScore: district.overallScore,
+      riskStatus: district.riskStatus,
+      participationPercentage: district.participationPercentage,
+      evidenceSubmissionPercentage:
+        district.evidenceSubmissionPercentage,
+      attendancePercentage: district.attendancePercentage,
+    }));
+
+  /*
+   * -----------------------------
+   * Priority blocks
+   * -----------------------------
+   */
+
+  const priorityBlocks = [...blocks]
+    .sort((a, b) => a.overallScore - b.overallScore)
+    .slice(0, 5)
+    .map((block) => ({
+      block: block.block,
+      district: block.district,
+      overallScore: block.overallScore,
+      riskStatus: block.riskStatus,
+      participationPercentage: block.participationPercentage,
+      evidenceSubmissionPercentage:
+        block.evidenceSubmissionPercentage,
+      attendancePercentage: block.attendancePercentage,
+    }));
+
+  /*
+   * -----------------------------
+   * Discussion points
+   * -----------------------------
+   */
+
+  const discussionPoints = [];
+
+  for (const risk of risks) {
+    discussionPoints.push(
+      `Discuss actions required to improve ${risk.metric.toLowerCase()} (${(
+        risk.percentage * 100
+      ).toFixed(1)}%).`,
+    );
+  }
+
+  if (priorityDistricts.length > 0) {
+    discussionPoints.push(
+      `Review the lowest-performing districts: ${priorityDistricts
+        .map((item) => item.district)
+        .join(", ")}.`,
+    );
+  }
+
+  if (priorityBlocks.length > 0) {
+    discussionPoints.push(
+      `Review the lowest-performing blocks: ${priorityBlocks
+        .map((item) => item.block)
+        .join(", ")}.`,
+    );
+  }
+
+  if (previous) {
+    const decliningMetrics = monthOverMonthChanges.filter(
+      (item) => item.direction === "declined",
+    );
+
+    for (const metric of decliningMetrics) {
+      discussionPoints.push(
+        `${metric.metric} declined by ${Math.abs(
+          metric.change * 100,
+        ).toFixed(1)} percentage points from ${metric.from} to ${metric.to}.`,
+      );
+    }
+  }
+
+  return {
+    month: current.month,
+
+    summaryMetrics: {
+      totalSchools: current.totalSchools,
+      participatingSchools: current.participatingSchools,
+      participationPercentage:
+        current.participationPercentage,
+
+      evidenceSchools: current.evidenceSchools,
+      evidenceSubmissionPercentage:
+        current.evidenceSubmissionPercentage,
+
+      totalEnrollment: current.totalEnrollment,
+      totalAttendance: current.totalAttendance,
+      attendancePercentage:
+        current.attendancePercentage,
+    },
+
+    achievements,
+
+    monthOverMonthChanges,
+
+    risks,
+
+    priorityDistricts,
+
+    priorityBlocks,
+
+    discussionPoints,
   };
 };
 

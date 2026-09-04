@@ -3,6 +3,7 @@ import {
   getDashboardMetrics,
   getMonthlyMetrics,
   getMonthOverMonthMovement,
+  getMonthlyReviewSummary
 } from "../services/pblAnalyticsService.js";
 
 import {
@@ -176,6 +177,28 @@ export const blockHighlights = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to load block highlights",
+    });
+  }
+};
+
+
+/**
+ * GET /api/pbl/review-summary
+ */
+export const reviewSummary = async (req, res) => {
+  try {
+    const data = await getMonthlyReviewSummary(req.query);
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("Review summary error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate monthly review summary",
     });
   }
 };

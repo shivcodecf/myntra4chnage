@@ -462,3 +462,91 @@ export const getGrantEvidence = async (req, res) => {
     });
   }
 };
+
+
+
+
+export const getGrantReport = async (req, res) => {
+  try {
+    const { grantId } = req.params;
+    const { month } = req.query;
+
+    if (!grantId) {
+      return res.status(400).json({
+        success: false,
+        message: "Grant ID is required",
+      });
+    }
+
+    const filter = {
+      grantId,
+    };
+
+    if (month) {
+      filter.reportingMonth = month;
+    }
+
+    const report = await GrantReport.findOne(filter)
+      .sort({ reportingMonth: -1 })
+      .lean();
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: "No grant report found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        grantId: report.grantId,
+
+        donor: report.donor,
+
+        grantName: report.grantName,
+
+        reportingMonth: report.reportingMonth,
+
+        periodEndDate: report.periodEndDate,
+
+        reportDueDate: report.reportDueDate,
+
+        reportStatus: report.reportStatus,
+
+        coveredDistricts: report.coveredDistricts,
+
+        performance: {
+          sampledSchoolRecords: report.sampledSchoolRecords,
+
+          schoolsCompletedPbl: report.schoolsCompletedPbl,
+
+          pblCompletionRate: report.pblCompletionRate,
+
+          schoolsWithEvidence: report.schoolsWithEvidence,
+
+          evidenceSubmissionRate: report.evidenceSubmissionRate,
+
+          totalEnrollment: report.totalEnrollment,
+
+          totalAttendance: report.totalAttendance,
+
+          attendanceRate: report.attendanceRate,
+        },
+
+        riskStatus: report.riskStatus,
+
+        milestoneSummary: report.milestoneSummary,
+
+        draftReportText: report.draftReportText,
+      },
+    });
+  } catch (error) {
+    console.error("Get grant report error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch grant report",
+    });
+  }
+};

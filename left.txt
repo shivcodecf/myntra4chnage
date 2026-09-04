@@ -1,0 +1,4 @@
+🔴 Frontend interactive filters connected to backend
+🔴 Grant report generation
+🟡 Report export/copy
+🟢 Recommended actions (optional)

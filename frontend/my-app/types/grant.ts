@@ -71,3 +71,72 @@ export interface GrantEvidenceResponse {
     records: GrantEvidenceRecord[];
   };
 }
+
+export interface GrantReportMonth {
+  reportingMonth: string;
+  periodEndDate: string;
+  reportDueDate: string;
+  reportStatus: string;
+
+  pbl: {
+    schoolsCompleted: number;
+    completionRate: number;
+  };
+
+  evidence: {
+    schoolsWithEvidence: number;
+    submissionRate: number;
+  };
+
+  attendance: {
+    totalEnrollment: number;
+    totalAttendance: number;
+    attendanceRate: number;
+  };
+
+  riskStatus: string;
+  milestoneSummary: string;
+}
+
+export interface GrantPerformanceResponse {
+  success: boolean;
+  data: {
+    grantId: string;
+    months: GrantReportMonth[];
+  };
+}
+
+export interface GrantDetails {
+  grant: {
+    grantId: string;
+    donor: string;
+    grantName: string;
+    periodStart?: string;
+    periodEnd?: string;
+    coveredDistricts: string[];
+  };
+
+  financialSummary: {
+    totalApprovedBudget: number;
+    totalUtilized: number;
+    utilizationRate: number;
+  };
+
+  latestPerformance: {
+    reportingMonth: string;
+    reportStatus: string;
+    pblCompletionRate: number;
+    evidenceSubmissionRate: number;
+    attendanceRate: number;
+    riskStatus: string;
+  } | null;
+
+  monthlyPerformance: any[];
+
+  financialRecords: any[];
+}
+
+export interface GrantDetailsResponse {
+  success: boolean;
+  data: GrantDetails;
+}

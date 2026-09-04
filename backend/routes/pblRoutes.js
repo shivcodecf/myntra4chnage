@@ -9,6 +9,7 @@ import {
   blocks,
   districtHighlights,
   blockHighlights,
+  reviewSummary,
 } from "../controllers/pblController.js";
 
 const router = express.Router();
@@ -28,5 +29,7 @@ router.get("/blocks", blocks);
 router.get("/district-highlights", districtHighlights);
 
 router.get("/block-highlights", blockHighlights);
+
+router.get("/review-summary", reviewSummary);
 
 export default router;

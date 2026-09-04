@@ -71,3 +71,28 @@ export interface PBLDistrictResponse {
   success: boolean;
   data: PBLDistrict[];
 }
+
+type PBLFilter = {
+  month: string;
+  district: string;
+  block: string;
+  grade: string;
+  subject: string;
+};
+
+type BlockOption = {
+  block: string;
+  district: string;
+};
+
+type DistrictResponse = {
+  success: boolean;
+  data: {
+    district: string;
+  }[];
+};
+
+type BlockResponse = {
+  success: boolean;
+  data: BlockOption[];
+};
