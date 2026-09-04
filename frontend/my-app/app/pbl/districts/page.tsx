@@ -4,10 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import api from "@/lib/api";
 
-import type {
-  PBLDistrict,
-  PBLDistrictResponse,
-} from "@/types/pbl";
+import type { PBLDistrict, PBLDistrictResponse } from "@/types/pbl";
 
 export default function PBLDistrictsPage() {
   const [districts, setDistricts] = useState<PBLDistrict[]>([]);
@@ -20,15 +17,9 @@ export default function PBLDistrictsPage() {
   useEffect(() => {
     const fetchDistricts = async () => {
       try {
-        const response =
-          await api.get<PBLDistrictResponse>(
-            "/pbl/districts"
-          );
+        const response = await api.get<PBLDistrictResponse>("/pbl/districts");
 
-        console.log(
-          "District API response:",
-          response.data
-        );
+        console.log("District API response:", response.data);
 
         if (response.data.success) {
           setDistricts(response.data.data);
@@ -48,40 +39,30 @@ export default function PBLDistrictsPage() {
 
   const filteredDistricts = useMemo(() => {
     return districts.filter((district) => {
-      const matchesSearch =
-        district.district
-          .toLowerCase()
-          .includes(search.toLowerCase());
+      const matchesSearch = district.district
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
       const matchesRisk =
-        riskFilter === "All" ||
-        district.riskStatus === riskFilter;
+        riskFilter === "All" || district.riskStatus === riskFilter;
 
       return matchesSearch && matchesRisk;
     });
   }, [districts, search, riskFilter]);
 
   const riskCount = {
-    onTrack: districts.filter(
-      (item) => item.riskStatus === "On Track"
-    ).length,
+    onTrack: districts.filter((item) => item.riskStatus === "On Track").length,
 
-    atRisk: districts.filter(
-      (item) => item.riskStatus === "At Risk"
-    ).length,
+    atRisk: districts.filter((item) => item.riskStatus === "At Risk").length,
 
-    behind: districts.filter(
-      (item) => item.riskStatus === "Behind"
-    ).length,
+    behind: districts.filter((item) => item.riskStatus === "Behind").length,
   };
 
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-100 p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <p className="text-gray-600">
-            Loading district analysis...
-          </p>
+          <p className="text-gray-600">Loading district analysis...</p>
         </div>
       </main>
     );
@@ -102,50 +83,40 @@ export default function PBLDistrictsPage() {
   return (
     <main className="min-h-screen bg-gray-100 p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
 
         <div>
-          <p className="text-sm font-medium text-blue-600">
-            PBL Analytics
-          </p>
+          <p className="text-sm font-medium text-blue-600">PBL Analytics</p>
 
           <h1 className="mt-1 text-3xl font-bold text-gray-900">
             District Analysis
           </h1>
 
           <p className="mt-2 text-gray-600">
-            Compare PBL participation, evidence submission
-            and attendance across districts.
+            Compare PBL participation, evidence submission and attendance across
+            districts.
           </p>
         </div>
 
         {/* Summary Cards */}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-
           {/* On Track */}
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <p className="text-sm text-gray-500">
-              On Track
-            </p>
+            <p className="text-sm text-gray-500">On Track</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {riskCount.onTrack}
             </p>
 
-            <p className="mt-1 text-sm text-gray-500">
-              districts
-            </p>
+            <p className="mt-1 text-sm text-gray-500">districts</p>
           </div>
 
           {/* At Risk */}
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <p className="text-sm text-gray-500">
-              At Risk
-            </p>
+            <p className="text-sm text-gray-500">At Risk</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {riskCount.atRisk}
@@ -159,9 +130,7 @@ export default function PBLDistrictsPage() {
           {/* Behind */}
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <p className="text-sm text-gray-500">
-              Behind
-            </p>
+            <p className="text-sm text-gray-500">Behind</p>
 
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {riskCount.behind}
@@ -171,15 +140,12 @@ export default function PBLDistrictsPage() {
               districts below expectations
             </p>
           </div>
-
         </div>
 
         {/* Filters */}
 
         <div className="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
             {/* Search */}
 
             <div>
@@ -194,9 +160,7 @@ export default function PBLDistrictsPage() {
                 id="district-search"
                 type="text"
                 value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
+                onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search district..."
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
@@ -215,18 +179,16 @@ export default function PBLDistrictsPage() {
               <select
                 id="risk-filter"
                 value={riskFilter}
-                onChange={(event) =>
-                  setRiskFilter(event.target.value)
-                }
+                onChange={(event) => setRiskFilter(event.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               >
                 <option value="All">All</option>
                 <option value="On Track">On Track</option>
-                <option value="At Risk">At Risk</option>
                 <option value="Behind">Behind</option>
+                <option value="At Risk">At Risk</option>
+                <option value="Critical">Critical</option>
               </select>
             </div>
-
           </div>
 
           <div className="mt-4 text-sm text-gray-500">
@@ -245,7 +207,6 @@ export default function PBLDistrictsPage() {
         {/* District Table */}
 
         <div className="mt-8">
-
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               District Performance
@@ -257,15 +218,10 @@ export default function PBLDistrictsPage() {
           </div>
 
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-
             <div className="overflow-x-auto">
-
               <table className="w-full min-w-[1200px] text-left text-sm">
-
                 <thead className="bg-gray-50 border-b border-gray-200">
-
                   <tr>
-
                     <th className="px-5 py-4 font-semibold text-gray-700">
                       District
                     </th>
@@ -309,33 +265,26 @@ export default function PBLDistrictsPage() {
                     <th className="px-5 py-4 font-semibold text-gray-700">
                       Status
                     </th>
-
                   </tr>
-
                 </thead>
 
                 <tbody>
-
                   {filteredDistricts.map((district) => {
-
                     const participation =
                       district.participationPercentage * 100;
 
                     const evidence =
                       district.evidenceSubmissionPercentage * 100;
 
-                    const attendance =
-                      district.attendancePercentage * 100;
+                    const attendance = district.attendancePercentage * 100;
 
-                    const score =
-                      district.overallScore * 100;
+                    const score = district.overallScore * 100;
 
                     return (
                       <tr
                         key={district.district}
                         className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
                       >
-
                         <td className="px-5 py-4 font-medium text-gray-900">
                           {district.district}
                         </td>
@@ -377,7 +326,6 @@ export default function PBLDistrictsPage() {
                         </td>
 
                         <td className="px-5 py-4">
-
                           <span
                             className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
                               district.riskStatus === "On Track"
@@ -389,17 +337,12 @@ export default function PBLDistrictsPage() {
                           >
                             {district.riskStatus}
                           </span>
-
                         </td>
-
                       </tr>
                     );
                   })}
-
                 </tbody>
-
               </table>
-
             </div>
 
             {filteredDistricts.length === 0 && (
@@ -409,10 +352,8 @@ export default function PBLDistrictsPage() {
                 </p>
               </div>
             )}
-
           </div>
         </div>
-
       </div>
     </main>
   );

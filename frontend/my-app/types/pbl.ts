@@ -72,7 +72,7 @@ export interface PBLDistrictResponse {
   data: PBLDistrict[];
 }
 
-type PBLFilter = {
+export type PBLFilter = {
   month: string;
   district: string;
   block: string;
@@ -80,19 +80,19 @@ type PBLFilter = {
   subject: string;
 };
 
-type BlockOption = {
+export type BlockOption = {
   block: string;
   district: string;
 };
 
-type DistrictResponse = {
+export type DistrictResponse = {
   success: boolean;
   data: {
     district: string;
   }[];
 };
 
-type BlockResponse = {
+export type BlockResponse = {
   success: boolean;
   data: BlockOption[];
 };
