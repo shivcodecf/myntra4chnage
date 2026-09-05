@@ -341,7 +341,7 @@ build.
 Production environment variable:
 
 ```env
-NEXT_PUBLIC_API_URL=https://your-backend.onrender.com
+NEXT_PUBLIC_API_URL=https://myntra4chnage.onrender.com
 ```
 
 After changing environment variables, redeploy the application.
