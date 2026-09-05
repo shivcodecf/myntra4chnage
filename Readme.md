@@ -146,7 +146,7 @@ Make sure the following are installed:
 
 ```bash
 git clone https://github.com/shivcodecf/myntra4chnage.git
-cd myntra4chnage
+cd mantra4change-dashboard
 ```
 
 The project contains separate frontend and backend applications.
