@@ -100,7 +100,7 @@ The monthly review provides:
 ## Project Structure
 
 ```text
-myntra4chnage/
+mantra4change-dashboard/
 ├── backend/
 │   ├── package.json
 │   └── ...
