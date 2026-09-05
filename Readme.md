@@ -5,10 +5,6 @@ Dashboard** for monitoring school participation, evidence submission,
 attendance, district/block performance, risks, trends, and monthly
 program reviews.
 
-## Live Deployment
-
-- **Frontend:** Vercel
-- **Backend:** Render
 
 ## Live Deployment
 
