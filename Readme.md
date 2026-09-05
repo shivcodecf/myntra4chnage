@@ -1,15 +1,15 @@
 # Mantra4Change PBL Dashboard
 
-A full-stack **Project-Based Learning (PBL) Program Monitoring
-Dashboard** for monitoring school participation, evidence submission,
-attendance, district/block performance, risks, trends, and monthly
-program reviews.
-
+A full-stack **Project-Based Learning (PBL) Program Monitoring Dashboard** for monitoring school participation, evidence submission, attendance, district/block performance, risks, trends, and monthly program reviews.
 
 ## Live Deployment
 
-- **Frontend:** [https://myntra4chnage-uafn.vercel.app](https://myntra4chnage-uafn.vercel.app)
-- **Backend API:** [https://myntra4chnage.onrender.com](https://myntra4chnage.onrender.com)
+- **Frontend:** https://myntra4chnage-uafn.vercel.app
+- **Backend API:** https://myntra4chnage.onrender.com
+
+The frontend is deployed on **Vercel** and the backend API is deployed on **Render**.
+
+---
 
 ## Features
 
@@ -21,11 +21,16 @@ program reviews.
 - Total enrollment
 - Risk indicators
 - Month-over-month movement
-- Filtering by month, district, block, grade, and subject
+- Filtering by:
+  - Month
+  - District
+  - Block
+  - Grade
+  - Subject
 
 ### Analytics
 
-Available analytics sections include:
+The dashboard provides multiple analytics views:
 
 - Monthly Trends
 - District Analysis
@@ -35,31 +40,28 @@ Available analytics sections include:
 
 ### Risk & Exceptions
 
-Identifies districts and blocks requiring follow-up.
+The dashboard identifies districts and blocks that may require follow-up.
 
-Risk thresholds:
+Risk classification uses deterministic thresholds:
 
-Risk Status Indicator
+| Performance | Risk Status |
+|---|---|
+| >= 75% | On Track |
+| 60% - <75% | Behind |
+| 35% - <60% | At Risk |
+| <35% | Critical |
 
----
-
-On Track \>= 75%
-Behind 60% - \<75%
-At Risk 35% - \<60%
-Critical \<35%
-
-Risk classification is deterministic and does not use AI.
-
-The Risk & Exceptions page also identifies the weakest core indicator
-among:
+The Risk & Exceptions section also identifies the weakest core indicator among:
 
 - Participation
 - Evidence Submission
 - Attendance
 
+Risk classification does **not** use AI.
+
 ### Monthly Program Review
 
-Provides:
+The monthly review provides:
 
 - Summary KPIs
 - Achievements
@@ -68,6 +70,8 @@ Provides:
 - Priority districts
 - Priority blocks
 - Discussion points
+
+---
 
 ## Tech Stack
 
@@ -84,16 +88,19 @@ Provides:
 - Node.js
 - Express.js
 - REST APIs
+- MongoDB
 
 ### Deployment
 
-- Frontend: Vercel
-- Backend: Render
+- Vercel - Frontend
+- Render - Backend
+
+---
 
 ## Project Structure
 
 ```text
-mantra4change-dashboard/
+myntra4chnage/
 ├── backend/
 │   ├── package.json
 │   └── ...
@@ -111,46 +118,66 @@ mantra4change-dashboard/
         │   │   ├── risk/
         │   │   └── trends/
         │   └── ...
+        │
         ├── lib/
         │   └── api.ts
+        │
         ├── types/
         │   └── pbl.ts
+        │
         ├── public/
         └── package.json
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+# Getting Started
+
+## Prerequisites
+
+Make sure the following are installed:
 
 - Node.js
 - npm
 - Git
+- MongoDB or access to a MongoDB database
 
-### Clone the Repository
+## Clone the Repository
 
 ```bash
 git clone https://github.com/shivcodecf/myntra4chnage.git
-cd mantra4change-dashboard
+cd myntra4chnage
 ```
 
-## Backend Setup
+The project contains separate frontend and backend applications.
+
+---
+
+# Backend Setup
+
+## 1. Install Dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-Create the backend environment file and add the environment variables
-required by your backend.
+## 2. Configure Environment Variables
 
-Example:
+Create a `.env` file inside the `backend` directory.
 
 ```env
 PORT=1000
+MONGO_URI=your_mongodb_connection_string
 ```
 
-Start the backend in development mode:
+Replace `your_mongodb_connection_string` with your actual MongoDB connection string.
+
+**Do not commit the `.env` file to Git.**
+
+## 3. Start the Backend
+
+For development:
 
 ```bash
 npm run dev
@@ -168,28 +195,44 @@ The local backend normally runs at:
 http://localhost:1000
 ```
 
-## Frontend Setup
+---
 
-Open another terminal:
+# Frontend Setup
+
+## 1. Install Dependencies
+
+Open a new terminal:
 
 ```bash
 cd frontend/my-app
 npm install
 ```
 
-Create:
+## 2. Configure Environment Variables
+
+Create a `.env.local` file inside:
 
 ```text
-.env.local
+frontend/my-app
 ```
 
-Add:
+For local development:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:1000
+NEXT_PUBLIC_API_URL=http://localhost:1000/api
 ```
 
-Start the frontend:
+For production:
+
+```env
+NEXT_PUBLIC_API_URL=https://myntra4chnage.onrender.com/api
+```
+
+The `NEXT_PUBLIC_` prefix is required because the API URL is accessed by the browser-side Next.js application.
+
+**Do not commit `.env.local` to Git.**
+
+## 3. Start the Frontend
 
 ```bash
 npm run dev
@@ -201,33 +244,13 @@ Open:
 http://localhost:3000
 ```
 
-## Environment Variables
+---
 
-### Frontend
+# API Integration
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:1000
-```
+The frontend uses a shared Axios client to communicate with the backend.
 
-For production:
-
-```env
-NEXT_PUBLIC_API_URL=https://myntra4chnage.onrender.com
-```
-
-The `NEXT_PUBLIC_` prefix is required because the Axios client is used
-by browser-side Next.js components.
-
-### Backend
-
-Add backend-specific environment variables to the Render service.
-
-Never commit secrets such as API keys, database passwords, JWT secrets,
-or `.env` files containing credentials.
-
-## API Integration
-
-The frontend uses a shared Axios client:
+Example:
 
 ```ts
 import axios from "axios";
@@ -242,24 +265,26 @@ const api = axios.create({
 export default api;
 ```
 
-Example request:
+Example API request:
 
 ```ts
 api.get("/pbl/dashboard");
 ```
 
-## Main PBL API Endpoints
-
-Method Endpoint Purpose
-
 ---
 
-GET `/pbl/dashboard` Dashboard metrics and movement
-GET `/pbl/districts` District performance data
-GET `/pbl/blocks` Block performance data
-GET `/pbl/review-summary` Monthly review summary
+# Main PBL API Endpoints
 
-Dashboard filters can include:
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/pbl/dashboard` | Dashboard metrics and movement |
+| GET | `/pbl/districts` | District performance data |
+| GET | `/pbl/blocks` | Block performance data |
+| GET | `/pbl/review-summary` | Monthly review summary |
+
+### Dashboard Filters
+
+The dashboard supports:
 
 ```text
 month
@@ -275,20 +300,26 @@ Example:
 GET /pbl/dashboard?month=2025-09&district=Example&grade=6&subject=Math
 ```
 
-## Risk Logic
+---
 
-Risk classification uses the core performance indicators and the
-following thresholds:
+# Risk Logic
+
+Risk classification is based on the core performance indicators.
 
 ```text
->= 75%        -> On Track
-60% - <75%    -> Behind
-35% - <60%    -> At Risk
-< 35%         -> Critical
+>= 75%       -> On Track
+60% - <75%   -> Behind
+35% - <60%   -> At Risk
+< 35%        -> Critical
 ```
 
-The risk explanation on the exceptions page is based on the weakest
-value among participation, evidence submission, and attendance.
+The Risk & Exceptions section compares:
+
+- Participation
+- Evidence Submission
+- Attendance
+
+The weakest indicator is highlighted as the main performance gap.
 
 Example:
 
@@ -296,12 +327,13 @@ Example:
 Attendance is the main gap at 58.4%.
 ```
 
-No AI model is required for risk classification.
+Risk classification is deterministic and does not depend on an AI model.
 
-## Month-over-Month Movement
+---
 
-When at least two reporting months are available, the dashboard
-calculates movement between reporting periods.
+# Month-over-Month Movement
+
+When at least two reporting months are available, the dashboard calculates movement between reporting periods.
 
 Example:
 
@@ -319,9 +351,11 @@ The dashboard can display:
 - Percentage-point change
 - Improved / declined / unchanged direction
 
-## Production Deployment
+---
 
-### Frontend - Vercel
+# Production Deployment
+
+## Frontend - Vercel
 
 The Next.js application is deployed from:
 
@@ -329,24 +363,25 @@ The Next.js application is deployed from:
 frontend/my-app
 ```
 
-Vercel Root Directory:
+### Vercel Root Directory
 
 ```text
 frontend/my-app
 ```
 
-Vercel automatically detects Next.js and uses the Next.js production
-build.
+Vercel automatically detects the Next.js application and runs the production build.
 
-Production environment variable:
+### Production Environment Variable
 
 ```env
-NEXT_PUBLIC_API_URL=https://myntra4chnage.onrender.com
+NEXT_PUBLIC_API_URL=https://myntra4chnage.onrender.com/api
 ```
 
-After changing environment variables, redeploy the application.
+After changing environment variables in Vercel, redeploy the application.
 
-### Backend - Render
+---
+
+## Backend - Render
 
 The backend is deployed from:
 
@@ -354,19 +389,19 @@ The backend is deployed from:
 backend
 ```
 
-Render Root Directory:
+### Render Root Directory
 
 ```text
 ./backend
 ```
 
-Build Command:
+### Build Command
 
 ```bash
 npm install
 ```
 
-Start Command:
+### Start Command
 
 ```bash
 npm start
@@ -384,43 +419,63 @@ Example:
 }
 ```
 
-Use the actual backend entry file used by your project.
+Use the actual backend entry file used by the project.
 
-## Production Verification
+### Render Environment Variables
 
-### Frontend
+Configure the following environment variables in Render:
 
-Verify:
+```env
+PORT=1000
+MONGO_URI=your_mongodb_connection_string
+```
 
-- Dashboard loads
-- Filters work
+Keep the MongoDB connection string private.
+
+---
+
+# Production Verification
+
+## Frontend
+
+Verify that:
+
+- Dashboard loads correctly
+- Filters work correctly
 - Analytics pages load
 - Risk page loads
 - Monthly review loads
-- No browser console errors
+- No browser console errors are present
+- API requests go to the deployed backend
 
-### Backend
+## Backend
 
-Verify:
+Verify that:
 
 - Render service is running
+- MongoDB connection succeeds
 - API endpoints respond successfully
 - Render logs contain no application errors
 
-### Frontend -\> Backend
+## Frontend → Backend
 
-The deployed frontend must call the deployed Render backend and not
-`localhost`.
-
-Production example:
+The deployed frontend should use:
 
 ```text
-https://myntra4chnage.onrender.com
+https://myntra4chnage.onrender.com/api
 ```
 
-## Build Verification
+It should **not** use:
 
-Before deployment:
+```text
+http://localhost:1000/api
+```
+
+---
+
+# Build Verification
+
+Before deployment, verify the frontend production build:
 
 ```bash
 cd frontend/my-app
@@ -439,7 +494,11 @@ Then open:
 http://localhost:3000
 ```
 
-## Git Workflow
+---
+
+# Git Workflow
+
+After making changes:
 
 ```bash
 git status
@@ -448,22 +507,26 @@ git commit -m "Update PBL dashboard"
 git push
 ```
 
-If Vercel and Render are connected to the Git repository, new pushes can
-trigger deployments automatically.
+If Vercel and Render are connected to the GitHub repository, new pushes can trigger deployments automatically.
 
-## Important Notes
+---
+
+# Environment & Security Notes
 
 - Do not commit `.env` or `.env.local`.
-- Use `NEXT_PUBLIC_API_URL` for the browser-accessible frontend API
-  URL.
-- Keep backend secrets in backend environment variables.
-- Frontend and backend are deployed separately.
-- Risk classification is deterministic rather than AI-generated.
-- Production API URLs must not point to `localhost`.
+- Keep `MONGO_URI` and other backend secrets private.
+- Do not expose database credentials in frontend code.
+- Use `NEXT_PUBLIC_API_URL` for the browser-accessible frontend API URL.
+- Production frontend requests must point to the deployed backend.
+- Do not use `localhost` as the production API URL.
+- Risk classification is deterministic and does not use AI.
 
-## Author
+---
+
+# Author
 
 **Shivam Yadav**
 
-Built as a full-stack PBL program monitoring dashboard using Next.js,
-React, TypeScript, Axios, Node.js/Express, Vercel, and Render.
+Built as a full-stack PBL program monitoring dashboard using:
+
+**Next.js · React · TypeScript · Tailwind CSS · Axios · Node.js · Express · MongoDB · Vercel · Render**
