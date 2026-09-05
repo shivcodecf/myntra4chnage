@@ -7,35 +7,35 @@ program reviews.
 
 ## Live Deployment
 
--   **Frontend:** Vercel
--   **Backend:** Render
+- **Frontend:** Vercel
+- **Backend:** Render
 
-Add your actual deployed URLs before submission:
+## Live Deployment
 
--   Frontend: `https://myntra4chnage-uafn.vercel.app`
--   Backend API: `https://myntra4chnage.onrender.com`
+- **Frontend:** [https://myntra4chnage-uafn.vercel.app](https://myntra4chnage-uafn.vercel.app)
+- **Backend API:** [https://myntra4chnage.onrender.com](https://myntra4chnage.onrender.com)
 
 ## Features
 
 ### PBL Dashboard
 
--   School participation monitoring
--   Evidence submission monitoring
--   Attendance monitoring
--   Total enrollment
--   Risk indicators
--   Month-over-month movement
--   Filtering by month, district, block, grade, and subject
+- School participation monitoring
+- Evidence submission monitoring
+- Attendance monitoring
+- Total enrollment
+- Risk indicators
+- Month-over-month movement
+- Filtering by month, district, block, grade, and subject
 
 ### Analytics
 
 Available analytics sections include:
 
--   Monthly Trends
--   District Analysis
--   Block Analysis
--   Movement Analysis
--   Performance Trends
+- Monthly Trends
+- District Analysis
+- Block Analysis
+- Movement Analysis
+- Performance Trends
 
 ### Risk & Exceptions
 
@@ -43,58 +43,60 @@ Identifies districts and blocks requiring follow-up.
 
 Risk thresholds:
 
-  Risk Status       Indicator
-  ------------- -------------
-  On Track            \>= 75%
-  Behind          60% - \<75%
-  At Risk         35% - \<60%
-  Critical              \<35%
+Risk Status Indicator
+
+---
+
+On Track \>= 75%
+Behind 60% - \<75%
+At Risk 35% - \<60%
+Critical \<35%
 
 Risk classification is deterministic and does not use AI.
 
 The Risk & Exceptions page also identifies the weakest core indicator
 among:
 
--   Participation
--   Evidence Submission
--   Attendance
+- Participation
+- Evidence Submission
+- Attendance
 
 ### Monthly Program Review
 
 Provides:
 
--   Summary KPIs
--   Achievements
--   Month-over-month changes
--   Risks
--   Priority districts
--   Priority blocks
--   Discussion points
+- Summary KPIs
+- Achievements
+- Month-over-month changes
+- Risks
+- Priority districts
+- Priority blocks
+- Discussion points
 
 ## Tech Stack
 
 ### Frontend
 
--   Next.js
--   React
--   TypeScript
--   Tailwind CSS
--   Axios
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Axios
 
 ### Backend
 
--   Node.js
--   Express.js
--   REST APIs
+- Node.js
+- Express.js
+- REST APIs
 
 ### Deployment
 
--   Frontend: Vercel
--   Backend: Render
+- Frontend: Vercel
+- Backend: Render
 
 ## Project Structure
 
-``` text
+```text
 mantra4change-dashboard/
 ├── backend/
 │   ├── package.json
@@ -125,20 +127,20 @@ mantra4change-dashboard/
 
 ### Prerequisites
 
--   Node.js
--   npm
--   Git
+- Node.js
+- npm
+- Git
 
 ### Clone the Repository
 
-``` bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+```bash
+git clone https://github.com/shivcodecf/myntra4chnage.git
 cd mantra4change-dashboard
 ```
 
 ## Backend Setup
 
-``` bash
+```bash
 cd backend
 npm install
 ```
@@ -148,58 +150,58 @@ required by your backend.
 
 Example:
 
-``` env
+```env
 PORT=1000
 ```
 
 Start the backend in development mode:
 
-``` bash
+```bash
 npm run dev
 ```
 
 For production:
 
-``` bash
+```bash
 npm start
 ```
 
 The local backend normally runs at:
 
-``` text
-http://localhost:5000
+```text
+http://localhost:1000
 ```
 
 ## Frontend Setup
 
 Open another terminal:
 
-``` bash
+```bash
 cd frontend/my-app
 npm install
 ```
 
 Create:
 
-``` text
+```text
 .env.local
 ```
 
 Add:
 
-``` env
+```env
 NEXT_PUBLIC_API_URL=http://localhost:1000
 ```
 
 Start the frontend:
 
-``` bash
+```bash
 npm run dev
 ```
 
 Open:
 
-``` text
+```text
 http://localhost:3000
 ```
 
@@ -207,13 +209,13 @@ http://localhost:3000
 
 ### Frontend
 
-``` env
+```env
 NEXT_PUBLIC_API_URL=http://localhost:1000
 ```
 
 For production:
 
-``` env
+```env
 NEXT_PUBLIC_API_URL=https://myntra4chnage.onrender.com
 ```
 
@@ -231,7 +233,7 @@ or `.env` files containing credentials.
 
 The frontend uses a shared Axios client:
 
-``` ts
+```ts
 import axios from "axios";
 
 const api = axios.create({
@@ -246,22 +248,24 @@ export default api;
 
 Example request:
 
-``` ts
+```ts
 api.get("/pbl/dashboard");
 ```
 
 ## Main PBL API Endpoints
 
-  Method   Endpoint                Purpose
-  -------- ----------------------- --------------------------------
-  GET      `/pbl/dashboard`        Dashboard metrics and movement
-  GET      `/pbl/districts`        District performance data
-  GET      `/pbl/blocks`           Block performance data
-  GET      `/pbl/review-summary`   Monthly review summary
+Method Endpoint Purpose
+
+---
+
+GET `/pbl/dashboard` Dashboard metrics and movement
+GET `/pbl/districts` District performance data
+GET `/pbl/blocks` Block performance data
+GET `/pbl/review-summary` Monthly review summary
 
 Dashboard filters can include:
 
-``` text
+```text
 month
 district
 block
@@ -271,7 +275,7 @@ subject
 
 Example:
 
-``` text
+```text
 GET /pbl/dashboard?month=2025-09&district=Example&grade=6&subject=Math
 ```
 
@@ -280,7 +284,7 @@ GET /pbl/dashboard?month=2025-09&district=Example&grade=6&subject=Math
 Risk classification uses the core performance indicators and the
 following thresholds:
 
-``` text
+```text
 >= 75%        -> On Track
 60% - <75%    -> Behind
 35% - <60%    -> At Risk
@@ -292,7 +296,7 @@ value among participation, evidence submission, and attendance.
 
 Example:
 
-``` text
+```text
 Attendance is the main gap at 58.4%.
 ```
 
@@ -305,7 +309,7 @@ calculates movement between reporting periods.
 
 Example:
 
-``` text
+```text
 July -> August
 
 Participation: +4.2 pp
@@ -314,10 +318,10 @@ Attendance:    -1.5 pp
 
 The dashboard can display:
 
--   Previous value
--   Current value
--   Percentage-point change
--   Improved / declined / unchanged direction
+- Previous value
+- Current value
+- Percentage-point change
+- Improved / declined / unchanged direction
 
 ## Production Deployment
 
@@ -325,13 +329,13 @@ The dashboard can display:
 
 The Next.js application is deployed from:
 
-``` text
+```text
 frontend/my-app
 ```
 
 Vercel Root Directory:
 
-``` text
+```text
 frontend/my-app
 ```
 
@@ -340,7 +344,7 @@ build.
 
 Production environment variable:
 
-``` env
+```env
 NEXT_PUBLIC_API_URL=https://your-backend.onrender.com
 ```
 
@@ -350,25 +354,25 @@ After changing environment variables, redeploy the application.
 
 The backend is deployed from:
 
-``` text
+```text
 backend
 ```
 
 Render Root Directory:
 
-``` text
+```text
 ./backend
 ```
 
 Build Command:
 
-``` bash
+```bash
 npm install
 ```
 
 Start Command:
 
-``` bash
+```bash
 npm start
 ```
 
@@ -376,7 +380,7 @@ Make sure the backend `package.json` contains a valid `start` script.
 
 Example:
 
-``` json
+```json
 {
   "scripts": {
     "start": "node server.js"
@@ -392,20 +396,20 @@ Use the actual backend entry file used by your project.
 
 Verify:
 
--   Dashboard loads
--   Filters work
--   Analytics pages load
--   Risk page loads
--   Monthly review loads
--   No browser console errors
+- Dashboard loads
+- Filters work
+- Analytics pages load
+- Risk page loads
+- Monthly review loads
+- No browser console errors
 
 ### Backend
 
 Verify:
 
--   Render service is running
--   API endpoints respond successfully
--   Render logs contain no application errors
+- Render service is running
+- API endpoints respond successfully
+- Render logs contain no application errors
 
 ### Frontend -\> Backend
 
@@ -414,7 +418,7 @@ The deployed frontend must call the deployed Render backend and not
 
 Production example:
 
-``` text
+```text
 https://myntra4chnage.onrender.com
 ```
 
@@ -422,26 +426,26 @@ https://myntra4chnage.onrender.com
 
 Before deployment:
 
-``` bash
+```bash
 cd frontend/my-app
 npm run build
 ```
 
 To test the production build locally:
 
-``` bash
+```bash
 npm run start
 ```
 
 Then open:
 
-``` text
+```text
 http://localhost:3000
 ```
 
 ## Git Workflow
 
-``` bash
+```bash
 git status
 git add .
 git commit -m "Update PBL dashboard"
@@ -453,13 +457,13 @@ trigger deployments automatically.
 
 ## Important Notes
 
--   Do not commit `.env` or `.env.local`.
--   Use `NEXT_PUBLIC_API_URL` for the browser-accessible frontend API
-    URL.
--   Keep backend secrets in backend environment variables.
--   Frontend and backend are deployed separately.
--   Risk classification is deterministic rather than AI-generated.
--   Production API URLs must not point to `localhost`.
+- Do not commit `.env` or `.env.local`.
+- Use `NEXT_PUBLIC_API_URL` for the browser-accessible frontend API
+  URL.
+- Keep backend secrets in backend environment variables.
+- Frontend and backend are deployed separately.
+- Risk classification is deterministic rather than AI-generated.
+- Production API URLs must not point to `localhost`.
 
 ## Author
 
